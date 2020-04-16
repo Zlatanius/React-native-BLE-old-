@@ -1,26 +1,14 @@
 import React, {useEffect, useState} from 'react';
-import {
-  Text,
-  View,
-  Button,
-  Platform,
-  PermissionsAndroid,
-  NativeEventEmitter,
-  NativeModules,
-} from 'react-native';
-import {useDispatch} from 'react-redux';
-import BleManager from 'react-native-ble-manager';
+import {Text, View, Button, Platform, PermissionsAndroid} from 'react-native';
+import {useDispatch, useSelector} from 'react-redux';
 
 import * as appActions from '../store/actions/appActions';
 
-const BleManagerModule = NativeModules.BleManager;
-const bleManagerEmitter = new NativeEventEmitter(BleManagerModule);
-
 const ScanDevicesScreen = (props) => {
-  const [isInitialised, setIsInitialised] = useState(false);
-  const [discoveredPeripherals, setDiscoveredPeripherals] = useState(new Map());
-
   const dispatch = useDispatch();
+
+  const isInitialised = useSelector((state) => state.moduleIsInitialized);
+  const currPeripherals = useSelector((state) => state.discoveredDevices);
 
   useEffect(() => {
     if (Platform.OS === 'android' && Platform.Version >= 23) {
@@ -42,42 +30,21 @@ const ScanDevicesScreen = (props) => {
         }
       });
     }
-  });
+  }, [PermissionsAndroid]);
 
   useEffect(() => {
     dispatch(appActions.startBle());
-    setIsInitialised(true);
   }, [dispatch]);
-
-  useEffect(() => {
-    const discoverPeripheralHandler = bleManagerEmitter.addListener(
-      'BleManagerDiscoverPeripheral',
-      handleDiscoverPeripheral,
-    );
-    return () => {
-      discoverPeripheralHandler.remove();
-    };
-  });
-
-  const handleDiscoverPeripheral = (peripheral) => {
-    const peripherals = discoveredPeripherals;
-
-    if (!peripherals.get(peripheral.id)) {
-      console.log('Adding peripheral');
-      peripherals.set(peripheral.id, peripheral);
-      setDiscoveredPeripherals(peripherals);
-    }
-  };
 
   const startScan = () => {
     console.log('Started Scan');
     if (isInitialised) {
-      BleManager.scan([], 5, true);
+      dispatch(appActions.startScan());
     }
   };
 
   const selectPeripheralHandler = () => {
-    console.log(discoveredPeripherals);
+    console.log(currPeripherals);
   };
 
   return (
