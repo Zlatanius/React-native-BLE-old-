@@ -1,5 +1,4 @@
 export const INITIALIZE = 'INITIALIZE';
-export const TOGGLE_SCANING = 'TOGGLE_SCANING';
 export const ADD_PERIPHERAL = 'ADD_PERIPHERAL';
 
 export const startBle = () => {
