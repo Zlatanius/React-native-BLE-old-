@@ -1,13 +1,26 @@
-import {INITIALIZE, ADD_PERIPHERAL} from '../actions/appActions';
+import {
+  INITIALIZE,
+  ADD_PERIPHERAL,
+  CONNECT_TO_DEVICE,
+  DID_NOT_CONNECT,
+  DISCONNECT,
+  SCANING,
+} from '../actions/appActions';
+import ENV from '../../env';
 
 const initialState = {
   discoveredDevices: [],
   discoveredServices: [],
   discoveredCharacteristics: [],
-  selectedDevice: null,
-  selectedService: null,
-  selectedCharacteristic: null,
+  selectedDevice: {
+    deviceId: null,
+    selectedService: ENV.serviceId,
+    selectedReadCharacteristic: ENV.readCharacteristicId,
+    selectedWriteCharacteristic: ENV.writeCharacteristicId,
+  },
   moduleIsInitialized: false,
+  isConnected: false,
+  didNotConnect: false,
 };
 
 export default (state = initialState, action) => {
@@ -19,6 +32,19 @@ export default (state = initialState, action) => {
         ...state,
         discoveredDevices: state.discoveredDevices.concat(action.peripheral),
       };
+    case CONNECT_TO_DEVICE:
+      return {
+        ...state,
+        selectedDevice: {...state.selectedDevice, deviceId: action.deviceId},
+        isConnected: true,
+        didNotConnect: false,
+      };
+    case DID_NOT_CONNECT:
+      return {...state, didNotConnect: true};
+    case DISCONNECT:
+      return {...initialState, moduleIsInitialized: state.moduleIsInitialized};
+    case SCANING:
+      return {...state, discoveredDevices: []};
     default:
       return state;
   }
